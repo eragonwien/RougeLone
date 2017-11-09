@@ -30,7 +30,8 @@ public class BoardManager : MonoBehaviour {
     private Transform boardHolder;
     private List<Vector3> gridPositions = new List<Vector3>();
 
-    void InitialList()
+    // Generate Position in the board
+    void GeneratePosition()
     {
         gridPositions.Clear();
 
@@ -43,7 +44,8 @@ public class BoardManager : MonoBehaviour {
         }
     }
     
-    void BoardSetup()
+    // Build the Board - Generate Floor Tiles
+    void SetupBoard()
     {
         boardHolder = new GameObject("Board").transform;
 
@@ -60,18 +62,40 @@ public class BoardManager : MonoBehaviour {
 
                 GameObject instance = Instantiate(toInstantiate, new Vector3(x, y, 0f), Quaternion.identity) as GameObject;
 
-                instance.transform.SetParent(boardHolder); // Minute 9:19
+                instance.transform.SetParent(boardHolder);
             }
         }
     }
 
-	// Use this for initialization
-	void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+    Vector3 GetRandomPosition()
+    {
+        int randomIndex = Random.Range(0, gridPositions.Count);
+        Vector3 randomPosition = gridPositions[randomIndex];
+        gridPositions.RemoveAt(randomIndex);
+        return randomPosition;
+    }
+
+    void SpawnObjectAtRandom(GameObject[] tiles, int min, int max)
+    {
+        int objectCount = Random.Range(min, max + 1);
+
+        for (int i = 0; i < objectCount; i++)
+        {
+            Vector3 randomPosition = GetRandomPosition();
+            GameObject chosenTile = tiles[Random.Range(0, tiles.Length)];
+            Instantiate(chosenTile, randomPosition, Quaternion.identity);
+        }
+    }
+
+    public void SetupScene(int level)
+    {
+        SetupBoard();
+        GeneratePosition();
+        SpawnObjectAtRandom(wallTiles, wallCount.min, wallCount.max);
+        SpawnObjectAtRandom(foodTiles, foodCount.min, foodCount.max);
+
+        int enemyCount = (int)Mathf.Log(level, 2f);
+        SpawnObjectAtRandom(enemyTiles, enemyCount, enemyCount);
+        Instantiate(exit, new Vector3(column - 1, row - 1, 0f), Quaternion.identity);
+    } 
 }
